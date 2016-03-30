@@ -10,7 +10,7 @@ further enable feedback control mechanisms for asynchronous programming,
 such as [Hystrix](https://github.com/Netflix/Hystrix)-style backpressure.
 
 ```clojure
-[chantrix "0.1.0"]
+[opentable/chantrix "0.1.0"]
 ```
 
 ### junctions
