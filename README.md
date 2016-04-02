@@ -9,9 +9,11 @@ client-side middleware for request/response protocols such as HTTP. Junctions
 further enable feedback control mechanisms for asynchronous programming,
 such as [Hystrix](https://github.com/Netflix/Hystrix)-style backpressure.
 
-```clojure
-[opentable/chantrix "0.1.0"]
-```
+![](https://clojars.org/opentable/chantrix/latest-version.svg)
+
+[API Reference](http://bspell1.github.io/docs/chantrix/codox/index.html)
+|
+[Marginalia](http://bspell1.github.io/docs/chantrix/marginalia/uberdoc.html)
 
 ### junctions
 A junction is simply a pair of core.async channels. Requestor and dispatcher
