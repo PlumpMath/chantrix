@@ -4,7 +4,7 @@
   feedback control for core.async"
 
   :url
-  "http://github.com/opentable/chantrix"
+  "http://github.com/chantrix/chantrix"
 
   :license
   {:name "Eclipse Public License"

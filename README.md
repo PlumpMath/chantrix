@@ -9,7 +9,7 @@ client-side middleware for request/response protocols such as HTTP. Junctions
 further enable feedback control mechanisms for asynchronous programming,
 such as [Hystrix](https://github.com/Netflix/Hystrix)-style backpressure.
 
-![](https://clojars.org/opentable/chantrix/latest-version.svg)
+![](https://clojars.org/chantrix/latest-version.svg)
 
 [API Reference](http://bspell1.github.io/docs/chantrix/codox/index.html)
 |
