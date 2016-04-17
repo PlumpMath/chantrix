@@ -1,4 +1,4 @@
-(defproject opentable/chantrix "0.1.0"
+(defproject chantrix "0.1.0"
   :description
   "async extensions, composable middleware, and
   feedback control for core.async"
