@@ -37,7 +37,7 @@ second.
 (let [[nums sqrs :as j] (squarer)]
   (doseq [i (range 10)]
     (>!! nums i)
-    (println (<!! sqrs)))
+    (println (<!! sqrs))) ; 1 4 9 16 25 36 49 64 81
   (junc/close! j))
 ```
 
@@ -48,7 +48,7 @@ communicate with it. The client synchronously sends a sequence of numbers to
 the squarer and prints the responses.
 
 This is obviously a silly and contrived example, and it would be trivial
-to implement the squarer process using an indepent pair of channels. However,
+to implement the squarer process using an independent pair of channels. However,
 the junction abstraction provides explicit control over both sides of
 communication with an asynchronous process. This enables composable
 middleware that can correlate requests with responses. For example, we can
@@ -108,7 +108,7 @@ creates a buffered, transduced junction, and pipes its input to its output.
                     :<xform (map -))]
   (pipe >j <j)
   (onto >j [1 2 3])
-  (to-seq <j))
+  (to-seq <j)) ; (-2 -3 -4)
 ```
 
 In many cases, it is desirable to route all inbound traffic to a process
@@ -143,6 +143,7 @@ web service and delivers responses using junctions.
 (let [[>ctx <ctx] (junc/context http [:context] [:opts :context])]
   (>!! >ctx {:url "https://api.github.com/users/richhickey/keys"})
   (<!! <ctx))
+  ; {:opts {:url "https://api.github.com/users/richhickey/keys", …}, :status 200}
 ```
 
 Here, the http process returns a multiplexed junction, whose output side
@@ -158,7 +159,8 @@ to use this idiom.
 
 ```clojure
 (let [ctx (junc/context http [:context] [:opts :context])]
-  (>!!< ctx {:url "https://api.github.com/users/richhickey/keys"}))
+  (junc/>!!< ctx {:url "https://api.github.com/users/richhickey/keys"}))
+  ; {:opts {:url "https://api.github.com/users/richhickey/keys", …}, :status 200}
 ```
 
 ### feedback control
@@ -199,6 +201,9 @@ effect is that responses are printed in batches of 10.
   (onto >j (range 100))
   (while<!! [response <j]
     (println response)))
+    ; 2 5 8 4 7 6 3 1 9 0
+    ; 10 11 12 13 14 15 17 16 18 19 20
+    ; …
 ```
 
 #### todo
@@ -229,6 +234,7 @@ built-in context wrapper for correlating responses with requests.
 
 (let [connect (http/context http)]
   (>!!< connect {:url "https://api.github.com/users/richhickey/keys"}))
+  ; {:opts {:timeout 10000, :url "https://api.github.com/users/richhickey/keys", …}, :status 200}
 ```
 
 ### async extensions
@@ -252,6 +258,9 @@ core.async/close!.
     (println "done"))
   (println (<!! ch))
   (close! ch :drain? true))
+  ; nil1 
+  ; done
+  ; nil
 ```
 
 #### throwing takes
@@ -271,6 +280,7 @@ They all throw if an exception is returned from a take/alts.
     (println "succeeded")
     (catch Exception e
       e)))
+  ; #error {:cause "failed" :data {} :via […]}
 ```
 
 #### taking conditionals
@@ -295,6 +305,7 @@ of the take from `channel` to `binding`.
     (while<! [x ch]
       (println x)))
   (onto ch [1 2 3 4 5]))
+  ; 1 2 3 4 5
 ```
 
 The `?` versions will throw if an exception is taken off the channel,
@@ -315,6 +326,11 @@ these exceptions.
       (catch Exception e
         (println e))))
   (onto ch [1 2 3 (ex-info "failed-4" {}) 5]))
+  ; 1
+  ; 2
+  ; #error { :cause failed-3 :data {} :via […]}
+  ; #error { :cause failed-4 :data {} :via […]}
+  ; 5
 ```
 
 #### convenience go/thread forms
@@ -347,6 +363,7 @@ used to perform a cleanup operation after taking all elements off a channel.
     (close! ch2))
   (onto ch1 [1 2 3])
   (to-seq ch2))
+  ; (1 2 3)
 ```
 
 `go-all` starts a sequence of `go-catch` blocks all at once. It then waits
@@ -363,6 +380,10 @@ in the order in which the blocks appear in the form.
            (last (take 10000000 (iterate inc 0))))]
   (while<!! [x ch]
     (println x)))
+    ; 1
+    ; 2
+    ; #error {:cause failed-2 :data {} :via […]}
+    ; 9999999
 ```
 `go-as->` is an analog of the `as->` macro in core. It repeatedly binds a name
 to the result of each form wrapped in a `go-catch` block. The forms are
@@ -377,6 +398,7 @@ returned as the result of the block, and no further processing is attempted.
        1
        (<! (thread (inc x)))
        (last (take (* 10000000 x) (iterate inc 0)))))
+       ; 19999999
 ```
 
 #### taking enumerators
@@ -399,6 +421,10 @@ a value every `ms` milliseconds. It stops producing values once it is closed.
     (println "tick"))
   (<!! (timeout 5000))
   (close! ch))
+  ; tick
+  ; tick
+  ; tick
+  ; tick
 ```
 
 #### custom channel `semaphore`
@@ -418,6 +444,15 @@ actually written to the buffer, and its state is a single counter.
       (<! (timeout 1000))
       (>! sem :release)))
   (onto ch (range 10)))
+  ; 62
+  
+  ; 04
+  
+  ; 51
+
+  ; 83
+  
+  ; 79
 ```
 
 ## license
