@@ -10,12 +10,12 @@ further enable feedback control mechanisms for asynchronous programming,
 such as [Hystrix](https://github.com/Netflix/Hystrix)-style backpressure.
 
 ![](https://clojars.org/chantrix/latest-version.svg)
+[![Build Status](https://travis-ci.org/chantrix/chantrix.svg?branch=master)](https://travis-ci.org/chantrix/chantrix)
 
 [API Reference](http://bspell1.github.io/docs/chantrix/codox/index.html)
 |
 [Marginalia](http://bspell1.github.io/docs/chantrix/marginalia/uberdoc.html)
-|
-[![Build Status](https://travis-ci.org/chantrix/chantrix.svg?branch=master)](https://travis-ci.org/chantrix/chantrix)
+
 
 ### junctions
 A junction is simply a pair of core.async channels. Requestor and dispatcher
