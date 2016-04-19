@@ -14,6 +14,8 @@ such as [Hystrix](https://github.com/Netflix/Hystrix)-style backpressure.
 [API Reference](http://bspell1.github.io/docs/chantrix/codox/index.html)
 |
 [Marginalia](http://bspell1.github.io/docs/chantrix/marginalia/uberdoc.html)
+|
+[![Build Status](https://travis-ci.org/chantrix/chantrix.svg?branch=master)](https://travis-ci.org/chantrix/chantrix)
 
 ### junctions
 A junction is simply a pair of core.async channels. Requestor and dispatcher
@@ -258,7 +260,7 @@ core.async/close!.
     (println "done"))
   (println (<!! ch))
   (close! ch :drain? true))
-  ; nil1 
+  ; nil1
   ; done
   ; nil
 ```
@@ -445,13 +447,13 @@ actually written to the buffer, and its state is a single counter.
       (>! sem :release)))
   (onto ch (range 10)))
   ; 62
-  
+
   ; 04
-  
+
   ; 51
 
   ; 83
-  
+
   ; 79
 ```
 
