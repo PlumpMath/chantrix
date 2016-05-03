@@ -29,4 +29,7 @@
    :all         (constantly true)}
 
   :eastwood
-  {:namespaces [:source-paths]})
+  {:namespaces [:source-paths]}
+
+  :codox
+  {:source-uri "https://github.com/chantrix/chantrix/blob/{version}/{filepath}#L{line}"})
