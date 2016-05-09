@@ -676,6 +676,31 @@
 
 ;;; custom channel types
 
+(defn distinct-buffer
+  "creates a blocking buffer with a maximum size,
+  which discards duplicate elements"
+  [size]
+  (let [s (atom #{})
+        b (buffer size)]
+    (reify
+      async-impl/Buffer
+        (full? [_]
+          (.full? b))
+        (remove! [_]
+          (when-let [v (.remove! b)]
+            (swap! s disj v)
+            v))
+        (close-buf! [_]
+          (reset! s #{})
+          (.close-buf! b))
+        (add!* [_ v]
+          (when-not (@s v)
+            (swap! s conj v)
+            (.add!* b v)))
+      Counted
+        (count [_]
+          (.count b)))))
+
 (defn interval
   "creates a channel that yields a value every interval milliseconds
   close the channel to stop the values"

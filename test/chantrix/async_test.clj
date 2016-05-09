@@ -966,6 +966,32 @@
       (is (= @results [1 4 [5 6]]))
       (is (= (count @errors) 2)))))
 
+(deftest distinct-buffer-chan
+  (testing "distinct elements"
+    (let [ch (chan (distinct-buffer 3))]
+      (>!! ch 1)
+      (>!! ch 2)
+      (>!! ch 3)
+      (is (not (offer! ch 4)))
+      (is (= (<!! ch) 1))
+      (>!! ch 1)
+      (is (= (<!! ch) 2))
+      (is (= (<!! ch) 3))
+      (is (= (<!! ch) 1))
+      (is (nil? (poll! ch)))))
+
+  (testing "duplicate elements"
+    (let [ch (chan (distinct-buffer 3))]
+      (>!! ch 1)
+      (>!! ch 2)
+      (>!! ch 2)
+      (>!! ch 1)
+      (>!! ch 3)
+      (is (= (<!! ch) 1))
+      (is (= (<!! ch) 2))
+      (is (= (<!! ch) 3))
+      (is (nil? (poll! ch))))))
+
 (deftest interval-chan
   (testing "default value"
     (let [ch (interval 20)]
