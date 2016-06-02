@@ -8,11 +8,15 @@
 
 (defmacro ^:private wrap-lex
   [name impl]
-  `(defmacro ~name [& args#] `(~'~impl ~@args#)))
+  `(do
+     (defmacro ~name [& args#] `(~'~impl ~@args#))
+     (alter-meta! ~(list 'var name) merge (meta #'~impl))))
 
 (defmacro ^:private wrap-fun
   [name impl]
-  `(def ~name ~impl))
+  `(do
+     (def ~name ~impl)
+     (alter-meta! (var ~name) merge (meta #'~impl))))
 
 (defn- except-form? [form]
   (when (seq? form)
@@ -21,9 +25,9 @@
 (wrap-lex go clojure.core.async/go)
 (wrap-lex go-loop clojure.core.async/go-loop)
 (wrap-lex thread clojure.core.async/thread)
-(wrap-lex <! clojure.core.async/<!)
-(wrap-lex >! clojure.core.async/>!)
-(wrap-lex alts! clojure.core.async/alts!)
+(wrap-fun <! clojure.core.async/<!)
+(wrap-fun >! clojure.core.async/>!)
+(wrap-fun alts! clojure.core.async/alts!)
 (wrap-fun alts!! clojure.core.async/alts!!)
 (wrap-fun chan clojure.core.async/chan)
 (wrap-fun timeout clojure.core.async/timeout)
@@ -37,6 +41,7 @@
 (wrap-fun untap clojure.core.async/untap)
 (wrap-fun untap-all clojure.core.async/untap-all)
 (wrap-fun offer! clojure.core.async/offer!)
+(wrap-fun put! clojure.core.async/put!)
 (wrap-fun poll! clojure.core.async/poll!)
 (wrap-fun pipe clojure.core.async/pipe)
 (wrap-fun <!! clojure.core.async/<!!)
