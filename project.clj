@@ -1,4 +1,4 @@
-(defproject chantrix "0.1.3"
+(defproject chantrix "0.1.4"
   :description
   "async extensions, composable middleware, and
   feedback control for core.async"
@@ -12,9 +12,9 @@
 
   :dependencies
   [[org.clojure/clojure "1.8.0"]
-   [org.clojure/core.async "0.2.374"]
+   [org.clojure/core.async "0.2.382"]
    [org.clojure/tools.trace "0.7.9" :scope "provided"]
-   [cheshire "5.5.0" :scope "provided"]
+   [cheshire "5.6.1" :scope "provided"]
    [http-kit "2.1.19" :scope "provided"]]
 
   :profiles
