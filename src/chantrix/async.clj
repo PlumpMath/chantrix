@@ -22,6 +22,12 @@
   (when (seq? form)
     (#{'catch 'finally} (first form))))
 
+(defn- nil-binding [binding]
+  (if (sequential? binding)
+    (interleave (filter symbol? (flatten binding))
+                (repeat nil))
+    [binding nil]))
+
 (wrap-lex go clojure.core.async/go)
 (wrap-lex go-loop clojure.core.async/go-loop)
 (wrap-lex thread clojure.core.async/thread)
@@ -163,12 +169,16 @@
 (defmacro when<!?
   "conditional wrapper for channel take with try/throw"
   [[binding ch] & then]
-  `(try
-     (let [r# (<!? ~ch)]
-       (when (some? r#)
+  `(let [r# (<! ~ch)]
+     (when (some? r#)
+       (if (instance? Exception r#)
+         (let [~@(nil-binding binding)]
+           (try
+             (throw r#)
+             ~@(filter except-form? then)))
          (let [~binding r#]
-           ~@(remove except-form? then))))
-     ~@(filter except-form? then)))
+           (try
+             ~@then))))))
 
 (defmacro if<!
   "conditional wrapper for channel take with alternative"
@@ -185,13 +195,18 @@
   (when (not-every? except-form? except)
     (throw (ex-info "only catch and finally are allowed in the except form"
                     {})))
-  `(try
-     (let [r# (<!? ~ch)]
-       (if (some? r#)
+  `(let [r# (<! ~ch)]
+     (if (some? r#)
+       (if (instance? Exception r#)
+         (let [~@(nil-binding binding)]
+           (try
+             (throw r#)
+             ~@except))
          (let [~binding r#]
-           ~then)
-         ~else))
-     ~@except))
+           (try
+             ~then
+             ~@except)))
+       ~else)))
 
 (defmacro while<!
   "drains a channel, invoking body for each message"
@@ -208,12 +223,14 @@
   `(let [ch# ~ch]
      (loop []
        (when<! [r# ch#]
-         (try
-           (when (instance? Exception r#)
-             (throw r#))
+         (if (instance? Exception r#)
+           (let [~@(nil-binding binding)]
+             (try
+               (throw r#)
+               ~@(filter except-form? body)))
            (let [~binding r#]
-             ~@(remove except-form? body))
-           ~@(filter except-form? body))
+             (try
+               ~@body)))
          (recur)))))
 
 (defmacro when-alts!
@@ -227,12 +244,16 @@
 (defmacro when-alts!?
   "conditional wrapper for alt take with try/throw"
   [[binding chs & kwargs] & then]
-  `(try
-     (let [[v# :as r#] (alts!? ~chs ~@kwargs)]
-       (when (some? v#)
+  `(let [[v# :as r#] (alts! ~chs ~@kwargs)]
+     (when (some? v#)
+       (if (instance? Exception v#)
+         (let [~@(nil-binding binding)]
+           (try
+             (throw v#)
+             ~@(filter except-form? then)))
          (let [~binding r#]
-           ~@(remove except-form? then))))
-     ~@(filter except-form? then)))
+           (try
+             ~@then))))))
 
 (defmacro if-alts!
   "conditional wrapper for alt take with alternative"
@@ -249,13 +270,18 @@
   (when (not-every? except-form? except)
     (throw (ex-info "only catch and finally are allowed in the except form"
                     {})))
-  `(try
-     (let [[v# :as r#] (alts!? ~chs ~@kwargs)]
-       (if (some? v#)
+  `(let [[v# :as r#] (alts! ~chs ~@kwargs)]
+     (if (some? v#)
+       (if (instance? Exception v#)
+         (let [~@(nil-binding binding)]
+           (try
+             (throw v#)
+             ~@except))
          (let [~binding r#]
-           ~then)
-         ~else))
-     ~@except))
+           (try
+             ~then
+             ~@except)))
+       ~else)))
 
 (defmacro while-alts!
   "drains a set of alts, invoking body for each message
@@ -274,12 +300,14 @@
   `(let [chs# ~chs]
      (loop []
        (when-alts! [[v# :as r#] chs# ~@kwargs]
-         (try
-           (when (instance? Exception v#)
-             (throw v#))
+         (if (instance? Exception v#)
+           (let [~@(nil-binding binding)]
+             (try
+               (throw v#)
+               ~@(filter except-form? body)))
            (let [~binding r#]
-             ~@(remove except-form? body))
-           ~@(filter except-form? body))
+             (try
+               ~@body)))
          (recur)))))
 
 (defmacro go-let
@@ -428,12 +456,16 @@
 (defmacro when<!!?
   "conditional wrapper for channel take with try/throw"
   [[binding ch] & then]
-  `(try
-     (let [r# (<!!? ~ch)]
-       (when (some? r#)
+  `(let [r# (<!! ~ch)]
+     (when (some? r#)
+       (if (instance? Exception r#)
+         (let [~@(nil-binding binding)]
+           (try
+             (throw r#)
+             ~@(filter except-form? then)))
          (let [~binding r#]
-           ~@(remove except-form? then))))
-     ~@(filter except-form? then)))
+           (try
+             ~@then))))))
 
 (defmacro if<!!
   "conditional wrapper for channel take with alternative"
@@ -450,13 +482,18 @@
   (when (not-every? except-form? except)
     (throw (ex-info "only catch and finally are allowed in the except form"
                     {})))
-  `(try
-     (let [r# (<!!? ~ch)]
-       (if (some? r#)
+  `(let [r# (<!! ~ch)]
+     (if (some? r#)
+       (if (instance? Exception r#)
+         (let [~@(nil-binding binding)]
+           (try
+             (throw r#)
+             ~@except))
          (let [~binding r#]
-           ~then)
-         ~else))
-     ~@except))
+           (try
+             ~then
+             ~@except)))
+       ~else)))
 
 (defmacro while<!!
   "drains a channel, invoking body for each message"
@@ -473,12 +510,14 @@
   `(let [ch# ~ch]
      (loop []
        (when<!! [r# ch#]
-         (try
-           (when (instance? Exception r#)
-             (throw r#))
+         (if (instance? Exception r#)
+           (let [~@(nil-binding binding)]
+             (try
+               (throw r#)
+               ~@(filter except-form? body)))
            (let [~binding r#]
-             ~@(remove except-form? body))
-           ~@(filter except-form? body))
+             (try
+               ~@body)))
          (recur)))))
 
 (defmacro when-alts!!
@@ -492,12 +531,16 @@
 (defmacro when-alts!!?
   "conditional wrapper for alt take with try/throw"
   [[binding chs & kwargs] & then]
-  `(try
-     (let [[v# :as r#] (alts!!? ~chs ~@kwargs)]
-       (when (some? v#)
+  `(let [[v# :as r#] (alts!! ~chs ~@kwargs)]
+     (when (some? v#)
+       (if (instance? Exception v#)
+         (let [~@(nil-binding binding)]
+           (try
+             (throw v#)
+             ~@(filter except-form? then)))
          (let [~binding r#]
-           ~@(remove except-form? then))))
-     ~@(filter except-form? then)))
+           (try
+             ~@then))))))
 
 (defmacro if-alts!!
   "conditional wrapper for alt take with alternative"
@@ -514,13 +557,18 @@
   (when (not-every? except-form? except)
     (throw (ex-info "only catch and finally are allowed in the except form"
                     {})))
-  `(try
-     (let [[v# :as r#] (alts!!? ~chs ~@kwargs)]
-       (if (some? v#)
+  `(let [[v# :as r#] (alts!! ~chs ~@kwargs)]
+     (if (some? v#)
+       (if (instance? Exception v#)
+         (let [~@(nil-binding binding)]
+           (try
+             (throw v#)
+             ~@except))
          (let [~binding r#]
-           ~then)
-         ~else))
-     ~@except))
+           (try
+             ~then
+             ~@except)))
+       ~else)))
 
 (defmacro while-alts!!
   "drains a set of alts, invoking body for each message
@@ -539,12 +587,14 @@
   `(let [chs# ~chs]
      (loop []
        (when-alts!! [[v# :as r#] chs# ~@kwargs]
-         (try
-           (when (instance? Exception v#)
-             (throw v#))
+         (if (instance? Exception v#)
+           (let [~@(nil-binding binding)]
+             (try
+               (throw v#)
+               ~@(filter except-form? body)))
            (let [~binding r#]
-             ~@(remove except-form? body))
-           ~@(filter except-form? body))
+             (try
+               ~@body)))
          (recur)))))
 
 (defmacro thread-loop

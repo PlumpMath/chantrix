@@ -190,7 +190,7 @@
                     (when<!? [x ch]
                       (is false)
                       (catch ExceptionInfo e
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (thrown-with-msg? ExceptionInfo #"testing2"
                     (when<!? [x ch]
                       (is (= x 2))
@@ -199,7 +199,7 @@
                     (when<!? [x ch]
                       (is (= x 3))
                       (finally
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (nil? (when<! [x ch] (is false))))))))
 
   (testing "if<!"
@@ -227,7 +227,7 @@
                       (is false)
                       :fail
                       (catch ExceptionInfo e
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (thrown-with-msg? ExceptionInfo #"testing2"
                     (if<!? [x ch]
                       (throw (ex-info "testing2" {}))
@@ -237,7 +237,7 @@
                       (is (= x 3))
                       :fail
                       (finally
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (= (if<! [x ch] (is false) 4)
                      4))))))
 
@@ -262,7 +262,7 @@
             (throw (ex-info "testing" {})))
           (>! ch x)
           (catch Exception e
-            (>! ch (ex-info "testing2" {}))))
+            (>! ch (ex-info "testing2" {:x x}))))
         (close! ch))
       (is (= (<!! ch) 1))
       (is (= (<!! ch) false))
@@ -298,7 +298,7 @@
                     (when-alts!? [[x] [ch0 ch1]]
                       (is false)
                       (catch ExceptionInfo e
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (thrown-with-msg? ExceptionInfo #"testing2"
                     (when-alts!? [[x] [ch0 ch1]]
                       (is (= x 2))
@@ -307,7 +307,7 @@
                     (when-alts!? [[x] [ch0 ch1]]
                       (is (= x 3))
                       (finally
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (nil? (when-alts! [[x] [ch0 ch1]] (is false))))))))
 
   (testing "if-alts!"
@@ -337,7 +337,7 @@
                       (is false)
                       :fail
                       (catch ExceptionInfo e
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (thrown-with-msg? ExceptionInfo #"testing2"
                     (if-alts!? [[x] [ch0 ch1]]
                       (throw (ex-info "testing2" {}))
@@ -347,7 +347,7 @@
                       (is (= x 3))
                       :fail
                       (finally
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (= (if-alts! [[x] [ch0 ch1]] (is false) 4)
                      4))))))
 
@@ -378,7 +378,7 @@
             (throw (ex-info "testing" {})))
           (>! ch x)
           (catch Exception e
-            (>! ch (ex-info "testing2" {}))))
+            (>! ch (ex-info "testing2" {:x x}))))
         (close! ch))
       (is (= (<!! ch) 1))
       (is (= (<!! ch) false))
@@ -513,6 +513,7 @@
       (is (nil? (<!! (go-while<!? [i ch]
                        (swap! results conj i)
                        (catch ExceptionInfo e
+                         (= i i)
                          (is false))))))
       (is (empty? @results)))
     (let [ch      (chan)
@@ -524,8 +525,9 @@
                          (throw (ex-info "testing" {}))
                          (swap! results conj i))
                        (catch Exception e
+                         (swap! results conj (* (or i 10) 10))
                          (swap! errors conj e))))))
-      (is (= @results [1 4 [5 6]]))
+      (is (= @results [1 100 30 4 [5 6]]))
       (is (= (count @errors) 2))))
 
   (testing "go-while-alts!"
@@ -549,6 +551,7 @@
       (is (nil? (<!! (go-while-alts!? [[i] [ch (timeout 1000)] :priority true]
                        (swap! results conj i)
                        (catch ExceptionInfo e
+                         (= i i)
                          (is false))))))
       (is (empty? @results)))
     (let [ch      (chan)
@@ -560,8 +563,9 @@
                          (throw (ex-info "testing" {}))
                          (swap! results conj i))
                        (catch Exception e
+                         (swap! results conj (* (or i 10) 10))
                          (swap! errors conj e))))))
-      (is (= @results [1 4 [5 6]]))
+      (is (= @results [1 100 30 4 [5 6]]))
       (is (= (count @errors) 2)))))
 
 (deftest thread-utilities
@@ -588,7 +592,7 @@
                     (when<!!? [x ch]
                       (is false)
                       (catch ExceptionInfo e
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (thrown-with-msg? ExceptionInfo #"testing2"
                     (when<!!? [x ch]
                       (is (= x 2))
@@ -597,7 +601,7 @@
                     (when<!!? [x ch]
                       (is (= x 3))
                       (finally
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (nil? (when<!! [x ch] (is false))))))))
 
   (testing "if<!!"
@@ -625,7 +629,7 @@
                       (is false)
                       :fail
                       (catch ExceptionInfo e
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (thrown-with-msg? ExceptionInfo #"testing2"
                     (if<!!? [x ch]
                       (throw (ex-info "testing2" {}))
@@ -635,7 +639,7 @@
                       (is (= x 3))
                       :fail
                       (finally
-                        (throw (ex-info "testing2" {}))))))
+                        (throw (ex-info "testing2" {:x x}))))))
               (is (= (if<!! [x ch] (is false) 4)
                      4))))))
 
@@ -660,7 +664,7 @@
             (throw (ex-info "testing" {})))
           (>!! ch x)
           (catch Exception e
-            (>!! ch (ex-info "testing2" {}))))
+            (>!! ch (ex-info "testing2" {:x x}))))
         (close! ch))
       (is (= (<!! ch) 1))
       (is (= (<!! ch) false))
@@ -694,7 +698,7 @@
             (when-alts!!? [[x] [ch0 ch1]]
               (is false)
               (catch ExceptionInfo e
-                (throw (ex-info "testing2" {}))))))
+                (throw (ex-info "testing2" {:x x}))))))
       (is (thrown-with-msg? ExceptionInfo #"testing2"
             (when-alts!!? [[x] [ch0 ch1]]
               (is (= x 2))
@@ -703,7 +707,7 @@
             (when-alts!!? [[x] [ch0 ch1]]
               (is (= x 3))
               (finally
-                (throw (ex-info "testing2" {}))))))
+                (throw (ex-info "testing2" {:x x}))))))
       (is (nil? (when-alts!! [[x] [ch0 ch1]] (is false))))))
 
   (testing "if-alts!!"
@@ -731,7 +735,7 @@
               (is false)
               :fail
               (catch ExceptionInfo e
-                (throw (ex-info "testing2" {}))))))
+                (throw (ex-info "testing2" {:x x}))))))
       (is (thrown-with-msg? ExceptionInfo #"testing2"
             (if-alts!!? [[x] [ch0 ch1]]
               (throw (ex-info "testing2" {}))
@@ -741,7 +745,7 @@
               (is (= x 3))
               :fail
               (finally
-                (throw (ex-info "testing2" {}))))))
+                (throw (ex-info "testing2" {:x x}))))))
       (is (= (if-alts!! [[x] [ch0 ch1]] (is false) 4)
              4))))
 
@@ -772,7 +776,7 @@
             (throw (ex-info "testing" {})))
           (>!! ch x)
           (catch Exception e
-            (>!! ch (ex-info "testing2" {}))))
+            (>!! ch (ex-info "testing2" {:x x}))))
         (close! ch))
       (is (= (<!! ch) 1))
       (is (= (<!! ch) false))
@@ -907,6 +911,7 @@
       (is (nil? (<!! (thread-while<!!? [i ch]
                        (swap! results conj i)
                        (catch ExceptionInfo e
+                         (= i i)
                          (is false))))))
       (is (empty? @results)))
     (let [ch      (chan)
@@ -918,8 +923,9 @@
                          (throw (ex-info "testing" {}))
                          (swap! results conj i))
                        (catch Exception e
+                         (swap! results conj (* (or i 10) 10))
                          (swap! errors conj e))))))
-      (is (= @results [1 4 [5 6]]))
+      (is (= @results [1 100 30 4 [5 6]]))
       (is (= (count @errors) 2))))
 
   (testing "thread-while-alts!!"
@@ -949,6 +955,7 @@
                                            :priority true]
                        (swap! results conj i)
                        (catch ExceptionInfo e
+                         (= i i)
                          (is false))))))
       (is (empty? @results)))
     (let [ch      (chan)
@@ -962,8 +969,9 @@
                          (throw (ex-info "testing" {}))
                          (swap! results conj i))
                        (catch Exception e
+                         (swap! results conj (* (or i 10) 10))
                          (swap! errors conj e))))))
-      (is (= @results [1 4 [5 6]]))
+      (is (= @results [1 100 30 4 [5 6]]))
       (is (= (count @errors) 2)))))
 
 (deftest distinct-buffer-chan
