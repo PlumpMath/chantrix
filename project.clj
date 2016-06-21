@@ -1,4 +1,4 @@
-(defproject chantrix "0.1.5"
+(defproject chantrix "0.1.6"
   :description
   "async extensions, composable middleware, and
   feedback control for core.async"
