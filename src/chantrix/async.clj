@@ -19,14 +19,25 @@
      (alter-meta! (var ~name) merge (meta #'~impl))))
 
 (defn- except-form? [form]
+  "determines whether a form is a catch/finally handler"
   (when (seq? form)
     (#{'catch 'finally} (first form))))
 
+(defn reflat
+  "recursive map/sequence flatten"
+  [l]
+  (loop [l l r []]
+    (cond
+      (nil? l)          r
+      (not (coll? l))   (conj r l)
+      (nil? (first l))  (recur (next l) r)
+      (coll? (first l)) (recur (concat (first l) (next l)) r)
+      :else             (recur (next l) (conj r (first l))))))
+
 (defn- nil-binding [binding]
-  (if (sequential? binding)
-    (interleave (filter symbol? (flatten binding))
-                (repeat nil))
-    [binding nil]))
+  "generates a nil assignment for all lhs symbols in a binding"
+  (interleave (filter symbol? (reflat binding))
+              (repeat nil)))
 
 (wrap-lex go clojure.core.async/go)
 (wrap-lex go-loop clojure.core.async/go-loop)
