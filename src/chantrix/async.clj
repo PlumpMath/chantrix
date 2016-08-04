@@ -2,21 +2,10 @@
   "core.async wrapper and extensions for chantrix"
   (:import [clojure.lang Counted])
   (:require [clojure.core.async]
-            [clojure.core.async.impl.protocols :as async-impl]))
+            [clojure.core.async.impl.protocols :as async-impl]
+            [potemkin]))
 
 ;;; async wrappers/utilities
-
-(defmacro ^:private wrap-lex
-  [name impl]
-  `(do
-     (defmacro ~name [& args#] `(~'~impl ~@args#))
-     (alter-meta! ~(list 'var name) merge (meta #'~impl))))
-
-(defmacro ^:private wrap-fun
-  [name impl]
-  `(do
-     (def ~name ~impl)
-     (alter-meta! (var ~name) merge (meta #'~impl))))
 
 (defn- except-form? [form]
   "determines whether a form is a catch/finally handler"
@@ -39,30 +28,32 @@
   (interleave (filter symbol? (reflat binding))
               (repeat nil)))
 
-(wrap-lex go clojure.core.async/go)
-(wrap-lex go-loop clojure.core.async/go-loop)
-(wrap-lex thread clojure.core.async/thread)
-(wrap-fun <! clojure.core.async/<!)
-(wrap-fun >! clojure.core.async/>!)
-(wrap-fun alts! clojure.core.async/alts!)
-(wrap-fun alts!! clojure.core.async/alts!!)
-(wrap-fun chan clojure.core.async/chan)
-(wrap-fun timeout clojure.core.async/timeout)
-(wrap-fun promise-chan clojure.core.async/promise-chan)
-(wrap-fun buffer clojure.core.async/buffer)
-(wrap-fun dropping-buffer clojure.core.async/dropping-buffer)
-(wrap-fun sliding-buffer clojure.core.async/sliding-buffer)
-(wrap-fun split clojure.core.async/split)
-(wrap-fun mult clojure.core.async/mult)
-(wrap-fun tap clojure.core.async/tap)
-(wrap-fun untap clojure.core.async/untap)
-(wrap-fun untap-all clojure.core.async/untap-all)
-(wrap-fun offer! clojure.core.async/offer!)
-(wrap-fun put! clojure.core.async/put!)
-(wrap-fun poll! clojure.core.async/poll!)
-(wrap-fun pipe clojure.core.async/pipe)
-(wrap-fun <!! clojure.core.async/<!!)
-(wrap-fun >!! clojure.core.async/>!!)
+;; eliminate the need to refer to both core.async and chantrix.async
+(potemkin/import-vars [clojure.core.async
+                       go
+                       go-loop
+                       thread
+                       <!
+                       >!
+                       alts!
+                       alts!!
+                       chan
+                       timeout
+                       promise-chan
+                       buffer
+                       dropping-buffer
+                       sliding-buffer
+                       split
+                       mult
+                       tap
+                       untap
+                       untap-all
+                       offer!
+                       put!
+                       poll!
+                       pipe
+                       <!!
+                       >!!])
 
 (defn close!
   "closes a channel, optionally freeing up any parked writers
