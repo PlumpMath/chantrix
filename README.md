@@ -12,9 +12,9 @@ such as [Hystrix](https://github.com/Netflix/Hystrix)-style backpressure.
 ![](https://clojars.org/chantrix/latest-version.svg)
 [![Build Status](https://travis-ci.org/chantrix/chantrix.svg?branch=master)](https://travis-ci.org/chantrix/chantrix)
 
-[API Reference](http://bspell1.github.io/docs/chantrix/codox/index.html)
+[API Reference](http://chantrix.github.io/docs/codox/index.html)
 |
-[Marginalia](http://bspell1.github.io/docs/chantrix/marginalia/uberdoc.html)
+[Marginalia](http://chantrix.github.io/docs/marginalia/uberdoc.html)
 
 
 ### junctions
